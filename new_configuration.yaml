@@ -1,0 +1,49 @@
+## YAML Template.
+---
+configuration : 
+    - name : alice
+      ip : 128.237.210.238
+      port : 12345
+    - name : bob
+      ip : 128.237.210.238
+      port : 12346
+    - name : charlie
+      ip : 128.237.167.249
+      port : 12347
+    - name : daphnie
+      ip : 128.237.167.249
+      port : 12348
+    - name : ed
+      ip : 128.237.167.249
+      port : 12349
+    - name : logger
+      ip : 128.237.210.238
+      port : 1989
+
+groups :
+    - name : Group1
+      members : 
+        - alice
+        - bob
+        - charlie
+    - name : Group2
+      members : 
+        - daphnie
+        - bob
+        - charlie
+
+sendRules : 
+    - action : drop
+      src : bob
+      dest : alice
+    - action : delay
+      kind : Lookup
+    - action : drop
+      kind : impossiblekind
+
+receiveRules : 
+    - action : duplicate
+      src : charlie
+      seqNum : 3
+    - action : drop
+      kind : impossiblekind
