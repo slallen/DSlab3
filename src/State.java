@@ -1,4 +1,4 @@
 
 public enum State {
-	Released,Waiting,Held
+	Released,Wanted,Held
 }

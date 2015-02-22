@@ -172,24 +172,12 @@ public class MessagePasser {
 			/* need to clear the delay queue because we deliver a non-delayed message*/
 			Listener.clear_delay_queue();
 			Message get = p.get_recv_queue().poll();
-			if( get instanceof TimeStampedMessage){
-				/* modify here, all muticast message will use same timestamp*/
-				if(get.get_kind().compareToIgnoreCase("mul") == 0){
-					get_clock().UpdateTimeStamp(((TimeStampedMessage) get).get_mul_timestamp());
-				}
-				else{
-					get_clock().UpdateTimeStamp(((TimeStampedMessage) get).get_timestamp());
-				}
-				if(get.get_group().compareToIgnoreCase("ALL") != 0){
-					get_clock().getTimeStamp().print_clock();
-				}
-			}
 			return get;
 		}
 	}
 	private boolean parse_configuration(String file_name) throws FileNotFoundException{
 		//FileInputStream file = new FileInputStream(file_name);
-		String url="https://www.dropbox.com/s/s6cjvidezm11ibg/configuration.yaml?dl=1";
+		String url="https://www.dropbox.com/s/k1gvqv8tja3epss/configuration4.yaml?dl=1";
 		
 		//String url = file_name;
 		String new_file = "new_configuration.yaml";
@@ -204,7 +192,7 @@ public class MessagePasser {
 			rbc.close();
 		} catch(Exception e){ e.printStackTrace(); }		
 		*/
-		FileInputStream file = new FileInputStream("/Users/shuo/Documents/eclipse/workspace/DSlab3/configuration.yaml");
+		FileInputStream file = new FileInputStream("C:\\Users\\sweet_000\\workspace\\DSlab3\\configuration.yaml");
 		//FileInputStream file = new FileInputStream(new_file);
 		/* TODO should restore last line */
 		

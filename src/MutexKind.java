@@ -1,4 +1,4 @@
 
 public enum MutexKind {
-	Request,Ack,Init
+	Request,Ack,Release,Init,NOT_A_MUTEX_MESSAGE
 }

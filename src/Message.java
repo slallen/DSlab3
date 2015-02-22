@@ -7,6 +7,7 @@ public class Message implements Serializable{
 	public static int seq_multi = 0;
 	private String origin;
 	public TimeStamp mul_start_timestamp;
+	public MutexKind mutex_type;
 	
 	private String group;
 	private String src;
@@ -25,6 +26,7 @@ public class Message implements Serializable{
 		this.dest = dest;
 		this.kind = kind;
 		this.data = data;
+		this.mutex_type = MutexKind.NOT_A_MUTEX_MESSAGE;
 	}
 	public Message(Message recv) {
 		this.src = recv.get_src();
@@ -34,6 +36,7 @@ public class Message implements Serializable{
 		this.data = recv.get_data();
 		this.log = recv.get_log();
 		this.origin = recv.get_origin();
+		this.mutex_type = recv.mutex_type;
 		this.multi_seq = recv.multi_seq;
 		this.group = recv.get_group();
 		this.mul_start_timestamp = recv.mul_start_timestamp;
@@ -60,8 +63,14 @@ public class Message implements Serializable{
 	public void set_dest(String dest){
 		this.dest =dest;
 	}
+	public void set_mutex_kind(MutexKind kind){
+		this.mutex_type = kind;
+	}
 	public void set_source(String source){
 		this.src = source;
+	}
+	public void set_kind(String kind){
+		this.kind = kind;
 	}
 	public void set_seqMulti(){
 		this.multi_seq = seq_multi;
@@ -86,6 +95,8 @@ public class Message implements Serializable{
 	public void set_group(String group){
 		this.group = group;
 	}
+	public int get_mul_seq(){return this.multi_seq;}
+	public MutexKind get_mutex_kind(){return this.mutex_type;}
 	public String get_group(){return group;}
 	public String get_origin(){return origin;}
 	public String get_src(){return src;}

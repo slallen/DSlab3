@@ -22,7 +22,7 @@ configuration :
       ip : 127.0.0.1
       port : 1985
       memberOf :
-         - Group2
+         - Group1
     - name : ccc
       ip : 127.0.0.1
       port : 12362
@@ -36,7 +36,10 @@ sendRules :
     - action : drop
       src : alice
       dest : bob
+      kind : impossiblekind
     
 receiveRules :
+    - action : delay
+      src : bob
     - action : drop
       kind : impossiblekind

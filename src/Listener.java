@@ -66,6 +66,18 @@ public class Listener implements Runnable{
 				else{
 					System.out.println("error recieve type!");
 				}
+				
+				/* modify here, all muticast message will use same timestamp*/
+					if(recv.get_kind().compareToIgnoreCase("mul") == 0){
+						MessagePasser.get_clock().UpdateTimeStamp(recv.get_mul_timestamp());
+					}
+					else{
+						MessagePasser.get_clock().UpdateTimeStamp(recv.get_timestamp());
+					}
+					if( recv.get_group() != null && recv.get_group().compareToIgnoreCase("ALL") != 0){
+						MessagePasser.get_clock().getTimeStamp().print_clock();
+					}
+				
 			}
 		} catch (IOException | ClassNotFoundException e) {
 			//e.printStackTrace();
