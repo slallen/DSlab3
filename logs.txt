@@ -1,0 +1,11 @@
+create groups(names "ALL") that contains every member of the configuration file(except logger) to update timestamp to all nodes when need.
+
+add a verbose option for send and recv, if multicast to ALL, will turn verbose to FALSE then will output nothing to screen.
+
+(need discuss later)
+for each multicast message, create another field called mul_start_timestamp. This value will record the timestamp when origin start to do this multicast. We will use this timestamp for multicast massage.
+for example, if 4 nodes in group. start timestamp = 0. Origin should send 3 messages, all these three messages with mul_start_timestamp = 1. However the timestamp for each message is 1,2,3. 
+Here for the timestamp, should it be 1,1,1 instead of 1,2,3?
+When recv a multicast massage, will update local timestamp based on mul_start_timestamp. See MessagePasser.java line 177~182.
+
+modify yaml parsing function to adjust to new type of configuration file.

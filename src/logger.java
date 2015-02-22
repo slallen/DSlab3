@@ -15,11 +15,10 @@ public class logger implements Runnable{
 	public static void main(String[] args) throws IOException{
 		String configuration_addr;
 		Scanner scanner = new Scanner(System.in);
-		System.out.println("input config file link:");
-		configuration_addr = scanner.nextLine();
 		System.out.println("input clock type");
+	//	configuration_addr = scanner.nextLine();
 		type = scanner.nextLine();
-		mp = new MessagePasser(configuration_addr,localname);
+		mp = new MessagePasser(null,localname);
 		mp.set_clockType(type);
 		
 	//	mp = new MessagePasser(configuration_addr,localname);

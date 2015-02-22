@@ -24,7 +24,7 @@ public abstract class TimeStamp implements Serializable{
 			if this > t return 1
 	*/
 	public abstract int compare(TimeStamp t);
-	
+	public abstract String toString();
 	public abstract void print_clock();
 	
 }

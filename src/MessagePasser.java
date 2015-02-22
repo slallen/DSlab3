@@ -32,8 +32,8 @@ public class MessagePasser {
 	public static HashMap<String,Group> groups = new HashMap<String, Group>();
 	private static String logger = "logger";
 	private Socket logger_socket;
-	private static LogicClockService logic_clock;
-	private static VectorClockService vector_clock;
+	public static LogicClockService logic_clock;
+	public static VectorClockService vector_clock;
 	public static int clock_type;
 	
 	public static ClockService get_clock(){
@@ -70,7 +70,7 @@ public class MessagePasser {
 		IncomeHandler income = new IncomeHandler(server_port);
 		new Thread(income).start();
 	}
-	public void send(Message to_send) throws IOException{
+	public void send(Message to_send,boolean verbose) throws IOException{
 		/* get info of this message and check send rules */
 		/* get a socket from connection list, if not exist, create another socket and send message*/
 		/* set message content like sequence number etc. */
@@ -91,12 +91,15 @@ public class MessagePasser {
 		}
 		
 		/* before send this message, modify current clock by 1*/
-		get_clock().UpdateTimeStamp(null);
-		get_clock().getTimeStamp().print_clock();
+		/* 2/19 update: update timestamp when user call send instead of here */
+		//get_clock().UpdateTimeStamp(null);
+		//get_clock().getTimeStamp().print_clock();
 		TimeStampedMessage message = new TimeStampedMessage(to_send,get_clock().getTimeStamp());
 
 		// When user create message: should call set_seqnumber, set_dest,set_kind
-		message.set_seqNum();
+		if(message.get_origin() != null){
+			message.set_seqNum();
+		}
 		message.set_source(local_name);
 		message.set_duplicate(false);
 		int result = send_check(message);
@@ -106,15 +109,17 @@ public class MessagePasser {
 			ObjectOutputStream logger_out = new ObjectOutputStream(logger_socket.getOutputStream());
 			logger_out.writeObject(message);
 			out.writeObject(message);
-
-			System.out.println("[SEND direct]	"+message.get_dest()+":"+message.get_data().toString());
+			
+			if(verbose)
+				System.out.println("[SEND direct]	"+message.get_dest()+":"+message.get_data().toString());
 			while( !send_queue.isEmpty()){
 				message = send_queue.poll();
-				send(message);
+				send(message,verbose);
 			}
 		}
 		else if(result == 1){
 			// drop the message
+			if(verbose)
 			System.out.println("[SEND drop]");
 		}
 		else if(result  == 2){
@@ -122,6 +127,7 @@ public class MessagePasser {
 			if(message.get_send_delay() == false){
 				message.set_send_delay(true);
 				send_queue.add(message);
+				if(verbose)
 				System.out.println("[SEND delay]");
 			}
 			else{
@@ -129,6 +135,7 @@ public class MessagePasser {
 				ObjectOutputStream logger_out = new ObjectOutputStream(logger_socket.getOutputStream());
 				logger_out.writeObject(message);
 				out.writeObject(message);
+				if(verbose)
 				System.out.println("[SEND delay(send)]	"+message.get_dest()+":"+message.get_data().toString());
 			}
 		}
@@ -140,11 +147,13 @@ public class MessagePasser {
 			ObjectOutputStream logger_out = new ObjectOutputStream(logger_socket.getOutputStream());
 			logger_out.writeObject(message);
 			out.writeObject(message);
+			if(verbose)
 			System.out.println("[SEND dup1]	"+message.get_dest()+":"+message.get_data().toString());
 			out = new ObjectOutputStream(fd.getOutputStream());
 			logger_out = new ObjectOutputStream(logger_socket.getOutputStream());
 			out.writeObject(dup);
 			logger_out.writeObject(message);
+			if(verbose)
 			System.out.println("[SEND dup2]	"+message.get_dest()+":"+message.get_data().toString());
 			while( !send_queue.isEmpty()){
 				message = send_queue.poll();
@@ -164,16 +173,27 @@ public class MessagePasser {
 			Listener.clear_delay_queue();
 			Message get = p.get_recv_queue().poll();
 			if( get instanceof TimeStampedMessage){
-				get_clock().UpdateTimeStamp(((TimeStampedMessage) get).get_timestamp());
-				get_clock().getTimeStamp().print_clock();
+				/* modify here, all muticast message will use same timestamp*/
+				if(get.get_kind().compareToIgnoreCase("mul") == 0){
+					get_clock().UpdateTimeStamp(((TimeStampedMessage) get).get_mul_timestamp());
+				}
+				else{
+					get_clock().UpdateTimeStamp(((TimeStampedMessage) get).get_timestamp());
+				}
+				if(get.get_group().compareToIgnoreCase("ALL") != 0){
+					get_clock().getTimeStamp().print_clock();
+				}
 			}
 			return get;
 		}
 	}
 	private boolean parse_configuration(String file_name) throws FileNotFoundException{
-		String url = file_name;
-				
+		//FileInputStream file = new FileInputStream(file_name);
+		String url="https://www.dropbox.com/s/s6cjvidezm11ibg/configuration.yaml?dl=1";
+		
+		//String url = file_name;
 		String new_file = "new_configuration.yaml";
+		/* TODO should restore these line after implementation
 		try {
 			URL download=new URL(url);
 			ReadableByteChannel rbc=Channels.newChannel(download.openStream());
@@ -183,40 +203,49 @@ public class MessagePasser {
 			fileOut.close();
 			rbc.close();
 		} catch(Exception e){ e.printStackTrace(); }		
-	
-		FileInputStream file = new FileInputStream(new_file);
-
+		*/
+		FileInputStream file = new FileInputStream("/Users/shuo/Documents/eclipse/workspace/DSlab3/configuration.yaml");
+		//FileInputStream file = new FileInputStream(new_file);
+		/* TODO should restore last line */
+		
 		Yaml yaml =new Yaml();
 		Map<String, Object>  buffer = (Map<String, Object>) yaml.load(file);
-		List<Map<String, Object>> group_list  = (List<Map<String, Object>>) buffer.get("groups");
 		List<Map<String, Object>> host_list  = (List<Map<String, Object>>) buffer.get("configuration");
 		List<Map<String, Object>> send_list  = (List<Map<String, Object>>) buffer.get("sendRules");
 		List<Map<String, Object>> recv_list  = (List<Map<String, Object>>) buffer.get("receiveRules");
-		if( group_list != null){
-			for(Map<String , Object> iterator : group_list){
-				Group group = new Group();
-				String group_name = (String)iterator.get("name");
-				ArrayList<String> member_list = (ArrayList<String>)iterator.get("members");
-				group.set_name(group_name);
-				LinkedList<String> temp = new LinkedList<String>();  
-				while( !member_list.isEmpty()){
-					group.get_member().add(member_list.remove(0));
-				} 
-				groups.put(group_name,group);
-			}
-		}
+
 		if(host_list == null || host_list.contains(null) || host_list.contains("")) {
 			System.out.println("ERROR: No hosts found!!");
-            /* TODO throw error, exit program */
 		}
 		else {
+			Group all = new Group();
+			all.set_name("ALL");
+
             for (Map<String, Object> iterator : host_list) {
                     Host host= new Host();
                     host.set_ip((String)iterator.get("ip"));
                     host.set_name((String)iterator.get("name"));
                     host.set_port((Integer)iterator.get("port"));
                     hosts.put(host.get_name(), host);
+                    all.get_member().add(host.get_name());
+                    
+                    ArrayList<String> belongto_list = (ArrayList<String>)iterator.get("memberOf");
+                    if(belongto_list != null){
+	                    for( String current_group:belongto_list){
+	                    	if(groups.get(current_group) != null){
+	                    		groups.get(current_group).get_member().add(host.get_name());
+	                    	}
+	                    	else{
+	                    		Group new_group = new Group();
+	                    		new_group.set_name(current_group);
+	                    		new_group.get_member().add(host.get_name());
+	                    		groups.put(new_group.get_name(), new_group);
+	                    	}
+	                    }
+                    }
+                    
             }
+            groups.put(all.get_name(), all);
         }
 	    if(send_list == null || send_list.contains(null) || send_list.contains("")) {
 	    	System.out.println("Warning: No send rules found!!");
@@ -248,6 +277,9 @@ public class MessagePasser {
 				recv_rules.add(rule);
 			}
 		}
+		
+		/* 2/19 update: create a group that contains all members of the network to multicast timestamps */
+
 		return true;
 		
 	}
@@ -281,7 +313,7 @@ public class MessagePasser {
 		}
 		return 0;
 	}
-	public void multicast(Message to_send, String dest_group) throws IOException{
+	public void multicast(Message to_send, String dest_group,boolean verbose) throws IOException{
 		Group get = groups.get(dest_group);
 		boolean check = false;
 		for(String dest : get.get_member()){
@@ -297,7 +329,7 @@ public class MessagePasser {
 		for(String dest : get.get_member()){
 			if( dest.compareToIgnoreCase(local_name) != 0){ 
 				to_send.set_dest(dest);
-				send(to_send);
+				send(to_send,verbose);
 			}
 		}
 	}

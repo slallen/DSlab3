@@ -67,7 +67,14 @@ public class VectorTimeStamp extends TimeStamp{
 		}
 		
 	}
-	
+	public String toString(){
+		String ret = new String("clock(vector) == (");
+		for(String key: local_map.keySet()){
+			ret += " " + key + "-" + local_map.get(key) + "; ";
+		}
+		ret += ")\t";
+		return ret;
+	}
 	public void print_clock(){
 		System.out.print("clock(vector) == (");
 	    for (String key : local_map.keySet()) {

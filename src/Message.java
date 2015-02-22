@@ -3,8 +3,11 @@ import java.io.Serializable;
 public class Message implements Serializable{
 	private static final long serialVersionUID = 1L;
 	public static int seq_num = 1; // global seq number starting with 1
+	
 	public static int seq_multi = 0;
 	private String origin;
+	public TimeStamp mul_start_timestamp;
+	
 	private String group;
 	private String src;
 	
@@ -33,7 +36,7 @@ public class Message implements Serializable{
 		this.origin = recv.get_origin();
 		this.multi_seq = recv.multi_seq;
 		this.group = recv.get_group();
-		
+		this.mul_start_timestamp = recv.mul_start_timestamp;
 		this.duplicate = recv.get_duplicate();
 		this.send_delay = recv.get_send_delay();
 	}
@@ -47,6 +50,12 @@ public class Message implements Serializable{
 	}
 	public boolean get_log(){
 		return this.log;
+	}
+	public TimeStamp get_mul_timestamp(){
+		return this.mul_start_timestamp;
+	}
+	public void set_mul_timestamp(TimeStamp now){
+		this.mul_start_timestamp = now;
 	}
 	public void set_dest(String dest){
 		this.dest =dest;
