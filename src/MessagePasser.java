@@ -311,7 +311,7 @@ public class MessagePasser {
 			}
 		}
 		if(!check){
-			System.out.println("illegal group name, exiting");
+			System.out.println("illegal group name, exiting"); //TODO: allow re-entry of Group name?
 			return;
 		}
 		for(String dest : get.get_member()){

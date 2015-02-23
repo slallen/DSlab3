@@ -94,9 +94,11 @@ public class Userapplication implements Runnable{
 		mp.multicast(release,dest,true);
 		state = State.Released;
 		ack_count = 0;
+		recv_count = 0;
 	}
 	public static void request(String dest,String kind,String data) throws IOException{
-		/* should send timestamp here ? */
+		/* TODO: should send timestamp here ? */
+		send_count++;
 		
 		/* first send request to group members, using multicast */
 		Message request = new Message(mp.local_name,dest,kind,data);
@@ -119,6 +121,7 @@ public class Userapplication implements Runnable{
 			System.out.println("I vote for myself first");
 		}
 		mp.multicast(request,dest,true);
+		recv_count += ack_count;
 		state = State.Wanted;
 		while(state != State.Held){
 			System.out.println("waiting for enough ACK's");
@@ -128,7 +131,7 @@ public class Userapplication implements Runnable{
 				e.printStackTrace();
 			}
 		}
-		System.out.println("********I got the resource********");
+		System.out.println("********I have the resource********");
 		System.out.println("send = " + send_count + " recv = " + recv_count);
 		System.out.println("**********************************");
 	}
@@ -173,7 +176,7 @@ public class Userapplication implements Runnable{
 									e.printStackTrace();
 								}
 								System.out.println("%%%%%%%%%%%");
-								System.out.println("[RELEASE] I vote to " + k.get_origin());
+								System.out.println("[RELEASE] I vote for " + k.get_origin());
 								System.out.println("%%%%%%%%%%%");
 								already_handle.add(recv);
 								voted = true;
@@ -241,7 +244,7 @@ public class Userapplication implements Runnable{
 									e.printStackTrace();
 								}
 								System.out.println("%%%%%%%%%%%");
-								System.out.println("[REQUEST] I vote to " + k.get_origin());
+								System.out.println("[REQUEST] I vote for " + k.get_origin());
 								System.out.println("%%%%%%%%%%%");
 								voted = true;
 								already_handle.add(k);
@@ -252,7 +255,7 @@ public class Userapplication implements Runnable{
 						System.out.println("[RECV]	"+recv.get_src() +":"+ recv.get_data().toString());
 					else{
 						if(verbose)
-							System.out.println("[RECVmulticast] " + recv.get_mul_timestamp().toString() + "  "+recv.get_origin()+" : sent by "+recv.get_src() +"  "+ recv.get_data().toString());
+							System.out.println("[RECV multicast] " + recv.get_mul_timestamp().toString() + "  "+recv.get_origin()+" : sent by "+recv.get_src() +"  "+ recv.get_data().toString());
 					}
 					if(recv != null && recv.get_kind().compareToIgnoreCase("mul") == 0){
 						boolean already = false;
