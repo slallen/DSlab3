@@ -180,6 +180,7 @@ public class Userapplication implements Runnable{
 								System.out.println("%%%%%%%%%%%");
 								already_handle.add(recv);
 								voted = true;
+								//recv_count++;
 							}
 							else{
 								voted = false;
@@ -248,6 +249,7 @@ public class Userapplication implements Runnable{
 								System.out.println("%%%%%%%%%%%");
 								voted = true;
 								already_handle.add(k);
+								//recv_count++;
 							}
 						}
 					}
