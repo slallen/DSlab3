@@ -2,48 +2,44 @@
 ---
 configuration : 
     - name : alice
-      ip : 128.237.210.238
-      port : 12345
+      ip : 127.0.0.1
+      port : 12344
+      memberOf :
+         - Group1
     - name : bob
-      ip : 128.237.210.238
-      port : 12346
+      ip : 127.0.0.1
+      port : 14255
+      memberOf :
+         - Group1
+         - Group2
     - name : charlie
-      ip : 128.237.167.249
-      port : 12347
-    - name : daphnie
-      ip : 128.237.167.249
-      port : 12348
-    - name : ed
-      ip : 128.237.167.249
-      port : 12349
+      ip : 127.0.0.1
+      port : 12998
+      memberOf :
+         - Group1
+         - Group2
+    - name: daphnie
+      ip : 127.0.0.1
+      port : 1985
+      memberOf :
+         - Group1
+    - name : ccc
+      ip : 127.0.0.1
+      port : 12362
+      memberOf :
+         - Group2
     - name : logger
-      ip : 128.237.210.238
-      port : 1989
-
-groups :
-    - name : Group1
-      members : 
-        - alice
-        - bob
-        - charlie
-    - name : Group2
-      members : 
-        - daphnie
-        - bob
-        - charlie
-
+      ip : 127.0.0.1
+      port : 1987
+    
 sendRules : 
     - action : drop
-      src : bob
-      dest : alice
-    - action : delay
-      kind : Lookup
-    - action : drop
+      src : alice
+      dest : bob
       kind : impossiblekind
-
-receiveRules : 
-    - action : duplicate
-      src : charlie
-      seqNum : 3
+    
+receiveRules :
+    - action : delay
+      src : bob
     - action : drop
       kind : impossiblekind

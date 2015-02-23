@@ -35,6 +35,9 @@ public class MessagePasser {
 	public static LogicClockService logic_clock;
 	public static VectorClockService vector_clock;
 	public static int clock_type;
+	public static int send_count = 0;
+	public static int recv_count = 0;
+
 	
 	public static ClockService get_clock(){
 		if(clock_type == 1) return logic_clock;
@@ -164,6 +167,7 @@ public class MessagePasser {
 		}
 	}
 	public Message receive(){
+		recv_count = 0;
 		Listener p = new Listener();
 		if( p.get_recv_queue().isEmpty()){
 			return null;
@@ -172,6 +176,7 @@ public class MessagePasser {
 			/* need to clear the delay queue because we deliver a non-delayed message*/
 			Listener.clear_delay_queue();
 			Message get = p.get_recv_queue().poll();
+			recv_count = p.get_recv_queue().size();
 			return get;
 		}
 	}
@@ -181,7 +186,7 @@ public class MessagePasser {
 		
 		//String url = file_name;
 		String new_file = "new_configuration.yaml";
-		/* TODO should restore these line after implementation
+
 		try {
 			URL download=new URL(url);
 			ReadableByteChannel rbc=Channels.newChannel(download.openStream());
@@ -191,10 +196,9 @@ public class MessagePasser {
 			fileOut.close();
 			rbc.close();
 		} catch(Exception e){ e.printStackTrace(); }		
-		*/
-		FileInputStream file = new FileInputStream("C:\\Users\\sweet_000\\workspace\\DSlab3\\configuration.yaml");
-		//FileInputStream file = new FileInputStream(new_file);
-		/* TODO should restore last line */
+		
+		//FileInputStream file = new FileInputStream("C:\\Users\\sweet_000\\workspace\\DSlab3\\configuration.yaml");
+		FileInputStream file = new FileInputStream(new_file);
 		
 		Yaml yaml =new Yaml();
 		Map<String, Object>  buffer = (Map<String, Object>) yaml.load(file);
@@ -302,6 +306,7 @@ public class MessagePasser {
 		return 0;
 	}
 	public void multicast(Message to_send, String dest_group,boolean verbose) throws IOException{
+		send_count = 0;
 		Group get = groups.get(dest_group);
 		boolean check = false;
 		for(String dest : get.get_member()){
@@ -318,6 +323,7 @@ public class MessagePasser {
 			if( dest.compareToIgnoreCase(local_name) != 0){ 
 				to_send.set_dest(dest);
 				send(to_send,verbose);
+				send_count++;
 			}
 		}
 	}

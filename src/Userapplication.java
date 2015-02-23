@@ -17,7 +17,7 @@ public class Userapplication implements Runnable{
 	public static boolean voted; // true = voted; false = not voted yet
 	public static int ack_count = 0;
 	
-	public static int send_count = 0;
+	//public static int send_count = 0;
 	public static int recv_count = 0;
 	
 	public static ArrayList<Message> recv_req = new ArrayList<Message>();
@@ -81,6 +81,8 @@ public class Userapplication implements Runnable{
 		}
 	}
 	public static void release(String dest,String kind,String data) throws IOException{
+		//send_count = 0;
+		//recv_count = 0;
 		Message release = new Message(mp.local_name,dest,kind,data);
 		release.set_origin(mp.local_name);
 		release.set_group(dest);
@@ -92,13 +94,15 @@ public class Userapplication implements Runnable{
 		release.set_kind("mul");
 		recv_mul.add(release);
 		mp.multicast(release,dest,true);
+		System.out.println("********Resource released********");
+		System.out.println("send = " + mp.send_count + " recv = " + recv_count);
+		System.out.println("**********************************");
 		state = State.Released;
 		ack_count = 0;
-		recv_count = 0;
 	}
 	public static void request(String dest,String kind,String data) throws IOException{
 		/* TODO: should send timestamp here ? */
-		send_count++;
+		//send_count++;
 		
 		/* first send request to group members, using multicast */
 		Message request = new Message(mp.local_name,dest,kind,data);
@@ -121,7 +125,7 @@ public class Userapplication implements Runnable{
 			System.out.println("I vote for myself first");
 		}
 		mp.multicast(request,dest,true);
-		recv_count += ack_count;
+		//recv_count += ack_count;
 		state = State.Wanted;
 		while(state != State.Held){
 			System.out.println("waiting for enough ACK's");
@@ -132,17 +136,17 @@ public class Userapplication implements Runnable{
 			}
 		}
 		System.out.println("********I have the resource********");
-		System.out.println("send = " + send_count + " recv = " + recv_count);
+		System.out.println("send = " + mp.send_count + " recv = " + recv_count);
 		System.out.println("**********************************");
 	}
 	public void run() {
+		recv_count = 0;
 		while(true){
 			if( mp != null){
 				Message recv = null;
 				recv = mp.receive();
 				if( recv != null){
 					boolean verbose =(recv.get_group()!=null) && (recv.get_group().compareToIgnoreCase("ALL") != 0);
-
 					if( recv.get_mutex_kind() != MutexKind.NOT_A_MUTEX_MESSAGE){
 						if(recv.get_mutex_kind() == MutexKind.Ack){
 							String group_name = recv.get_group();
@@ -152,6 +156,7 @@ public class Userapplication implements Runnable{
 							if(state == State.Wanted && ack_count >= Math.sqrt(num)){
 								state = State.Held;
 							}
+							recv_count ++;
 						}
 						else if(recv.get_mutex_kind() == MutexKind.Release){
 							boolean find = false;
@@ -180,7 +185,6 @@ public class Userapplication implements Runnable{
 								System.out.println("%%%%%%%%%%%");
 								already_handle.add(recv);
 								voted = true;
-								//recv_count++;
 							}
 							else{
 								voted = false;
@@ -228,6 +232,7 @@ public class Userapplication implements Runnable{
 								System.out.println(recv_req.get(i).get_origin());
 								recv_req.get(i).get_mul_timestamp().print_clock();
 							}
+							//recv_count = recv_req.size();
 							System.out.println("$$$$$$$$$$$$$$$$$$$$");
 
 							
@@ -249,9 +254,9 @@ public class Userapplication implements Runnable{
 								System.out.println("%%%%%%%%%%%");
 								voted = true;
 								already_handle.add(k);
-								//recv_count++;
 							}
 						}
+						//recv_count +=ack_count;
 					}
 					if(recv.get_kind().compareToIgnoreCase("mul") != 0)
 						System.out.println("[RECV]	"+recv.get_src() +":"+ recv.get_data().toString());
